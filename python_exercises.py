@@ -130,7 +130,7 @@ print(even)
 
 students = ["Ali", "Veli", "Ayşe", "Talat", "Zeynep", "Ece"]
 
-for index, student in enumerate(students,):
+for index, student in enumerate(students):
     if index <= 2:
         print(f"Enginering faculty {index + 1}.student: {student}")
     else:
@@ -167,3 +167,5 @@ print(set2.difference(set1)) # qcut, lambda, python, miuul
 # joint
 print(set1.intersection(set2)) # python, data 
 print(set2.intersection(set1)) # python, data
+
+
