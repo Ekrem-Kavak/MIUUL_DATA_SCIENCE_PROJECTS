@@ -36,7 +36,7 @@ import seaborn as sns
 df = sns.load_dataset("titanic")
 df.head(3) # İlk 3 satırı gösterir.
 print("--")
-df.tail(5) # Son 3 satırı gösterir.
+df.tail(3) # Son 3 satırı gösterir.
 print("---")
 
 print(df.shape) # (891, 15) 891 satır ve 15 sütundan oluşur.
@@ -111,4 +111,86 @@ print(df["age"].head())
 print(df.age.head())
 
 # df["age"].head() = df.age.head()
+
+print(type(df["age"].head())) # pandas.core.series.Series
+
+print(type(df[["age"]].head())) # pandas.frame.DataFrame
+
+# Eğer bir değişkeni [] ile seçersek türü series; [[]] ile seçersek türü
+# DataFrame olur.
+
+print(df[["age", "alive"]])
+
+col_names = ["age", "adult_male", "alive"]
+print(df[col_names])
+
+# Yeni değişken oluşturma
+
+df["age2"] = df["age"] ** 2
+df["age3"] = df["age"] / df["age2"]
+
+print(df.head())
+
+# Eklediğimiz değişkenleri silme
+
+df.drop("age3", axis=1, inplace=True)
+print(df.head())
+
+# Liste içindeki verileri silme
+
+print(df.drop(col_names, axis=1).head())
+
+print(df.head())
+
+# Belirli koşulları sağlayan değişkenleri listeleme ve silme
+
+print(df.loc[:, df.columns.str.contains("age")].head())
+# Sadece "age" içeren değişkenleri listeledik.
+
+print(df.loc[:, ~df.columns.str.contains("age")].head())
+# "age" içermeyen tüm değişkenleri listeledik.
+
+# LOC & ILOC
+
+# iloc: integer based selection
+
+print(df.iloc[0:3]) # ilk 3 indeksi listeler.
+print(df.iloc[1:5, 2:5]) # 1. indeksten 5. indekse; 2. değişkenden 5. değişkene kadar listeler.
+
+# loc: label based selection
+
+print("---")
+print(df.loc[0:3, "age"]) # 3. indekse kadar age değişkeni verileri listelenir.
+
+col_names = ["age","embarked","alive"]
+print(df.loc[0:3, col_names])
+
+# Koşullu seçim (conditional selection)
+
+print(df[df["age"] > 50].head())
+print(df[df["age"] > 50]["age"].count())
+print("---")
+
+# Yaşı 50'den büyük olan kişilerin age ve class bilgilerini listele
+print(df.loc[df["age"] > 50, ["age", "class"]].head())
+
+# Yaşı 50'den büyük ve erkek olan kişilerin age ve class bilgilerini listele.
+print(df.loc[(df["age"] > 50) & (df["sex"] == "male"), ["age", "class"]].head())
+
+# Yaşı 50'den büyük, erkek ve Cherbourg'da oturan kişilerin age, class, embark_town bilgileri
+
+print(df.loc[(df["age"] > 50) &
+(df["sex"] == "male") &
+(df["embark_town"] == "Cherbourg"),
+ ["age", "sex", "embark_town"]].head())
+
+# Yaşı 50'den büyük, erkek ve Cherbourg'da ya da Southampton'da oturan kişilerin age, class, embark_town bilgileri
+
+new_df = df.loc[(df["age"] > 50) &
+(df["sex"] == "male") &
+((df["embark_town"] == "Cherbourg") | (df["embark_town"] == ["Southampton"])),
+ ["age", "sex", "embark_town"]]
+
+# print(new_df)
+# print(new_df["embark_town"].value_counts())
 
