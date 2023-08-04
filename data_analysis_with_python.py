@@ -26,6 +26,7 @@ df.index # RangeIndex(start = 0, stop = 891, step = 1)
 df.describe().T # bazı istatistikleri verir
 df.isnull().values.any() # Null değerinin olup olmadığını söyler
 df.isnull().sum() # her değişkende kaç null değer olduğunu söyler
+df.isnull().sum().sum() # Toplam eksik değer sayısına ulaşırız
 
 def check_df(dataframe, head = 5):
     print("------- Shape ---------")
@@ -120,7 +121,43 @@ for col in cat_cols:
         cat_summary(df, col, plot = True)
 
 
+# SAYISAL DEĞİŞKEN ANALİZİ (Analysis of Numerical Variables)
 
+df[["age", "fare"]].describe().T
 
+# Değişkenler içinden sayısal olanları bulalım.
+num_cols = [col for col in df.columns if df[col].dtypes in ["float64", "int64"]]
 
+# Sayısal olup kategorik değişkene çevrilenleri çıkaralım.
+num_cols = [col for col in num_cols if col not in cat_cols]
+
+# Yukarıdaki özellikleri kullanarak fonksiyon oluşturalım.
+
+def num_summary(dataframe, numerical_col):
+        quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90]
+        print(dataframe[numerical_col].describe(quantiles).T)
+
+num_summary(df, "age")
+
+for col in num_cols:
+    num_summary(df, col)
+
+# Histogram kullanarak veriyi görselleştirelim.
+
+def num_summary(dataframe, numerical_col, plot = False):
+        quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90]
+        print(dataframe[numerical_col].describe(quantiles).T)
+
+        if plot:
+            dataframe[numerical_col].hist()
+            plt.xlabel(numerical_col)
+            plt.title(numerical_col)
+            plt.show(block = True)
+
+num_summary(df, "age", plot = True)
+
+# Tüm sayısal değişkenleri görselleştirelim.
+
+for col in num_cols:
+    num_summary(df, col, plot = True)
 
