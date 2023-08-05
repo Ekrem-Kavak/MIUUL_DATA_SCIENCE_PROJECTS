@@ -54,7 +54,7 @@ df["class"].nunique() # "class" değişkeni içindeki tekil bileşen sayısı
 cat_cols = [col for col in df.columns if str(df[col].dtypes) in ["category", "object", "bool"]]
 
 # 10 daha az bileşeni olan sayısal değişkenleri kategorik değişkene çevirdik.
-num_but_cat = [col for col in df.columns if df[col].nunique() < 10 and df[col].dtypes in ["int64", "float64"]]
+num_but_cat = [col for col in df.columns if df[col].nunique() < 10 and df[col].dtypes in ["int32", "int64", "float64"]]
 
 # Kategorik olup bileşeni (sınıfı) 20'den fazla olanları gözlemleyelim. Bileşenlerin 20'den fazla olması
 # verinin bilgi vermesi açısından faydasız görülebilir.
@@ -121,7 +121,7 @@ for col in cat_cols:
         cat_summary(df, col, plot = True)
 
 
-# SAYISAL DEĞİŞKEN ANALİZİ (Analysis of Numerical Variables)
+# 3- SAYISAL DEĞİŞKEN ANALİZİ (Analysis of Numerical Variables)
 
 df[["age", "fare"]].describe().T
 
@@ -160,4 +160,122 @@ num_summary(df, "age", plot = True)
 
 for col in num_cols:
     num_summary(df, col, plot = True)
+
+
+# 4- DEĞİŞKENLERİN YAKALANMASI VE İŞLEMLERİN GENELLEŞTİRİLMESİ
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+pd.set_option("display.max_columns", None)
+df = sns.load_dataset("titanic")
+df.head()
+df.info()
+
+def grab_col_names(dataframe, cat_th = 10, car_th = 20):
+    """
+    Veri setindeki kategorik, numerik ve kategorik fakat kardinal değişkenlerin isimlerini verir.
+    Parameters
+    ----------
+    dataframe: dataframe
+        değişken isimleri alınmak istenen dataframe'dir.
+    cat_th: int, float
+        numerik fakat kategorik olan değişkenler için sınıf eşik değeri
+    car_th: int, float
+        kategorik fakat kardinal değişkenler için sınıf eşik değeri
+
+    Returns
+    -------
+    cat_cols: list
+        Kategorik değişken listesi
+    num_cols: list
+        Numerik değişken listesi
+    cat_but_car: list
+        Kategorik görünümlü kardinal değişken listesi
+
+    Notes
+    -------
+    cat_cols + num_cols + cat_but_car = toplam değişken sayısı
+    "num_but_cat", "cat_cols"un içerisindedir.
+    """
+
+    cat_cols = [col for col in df.columns if str(df[col].dtypes) in ["category", "object", "bool"]]
+    num_but_cat = [col for col in df.columns if df[col].nunique() < 10 and df[col].dtypes in ["int32", "int64", "float64"]]
+    cat_but_car = [col for col in df.columns if
+                   df[col].nunique() > 20 and str(df[col].dtypes) in ["category", "object"]]
+
+    cat_cols = cat_cols + num_but_cat
+    cat_cols = [col for col in cat_cols if col not in cat_but_car]
+
+    num_cols = [col for col in df.columns if df[col].dtypes in ["float64", "int32", "int64"]]
+
+    num_cols = [col for col in num_cols if col not in cat_cols]
+
+    print(f"Observation: {dataframe.shape[0]}") # gözlem sayısı
+    print(f"Variables: {dataframe.shape[1]}")
+    print(f"cat_cols: {len(cat_cols)}")
+    print(f"num_cols: {len(num_cols)}")
+    print(f"cat_but_car: {len(cat_but_car)}")
+    print(f"num_but_cat: {len(num_but_cat)}")
+
+    return cat_cols, num_cols, cat_but_car
+
+help(grab_col_names)
+
+grab_col_names(df)
+
+cat_cols, num_cols, cat_but_car = grab_col_names(df)
+
+# Kategorik değişken için oluşturduğumuz fonksiyon
+
+def cat_summary(dataframe, col_name):
+    print(pd.DataFrame({col_name: dataframe[col_name].value_counts(),
+                        "Ratio": 100 * dataframe[col_name].value_counts()}))
+    print("------")
+
+cat_summary(df, "sex")
+
+for col in cat_cols:
+    cat_summary(df, col)
+
+def num_summary(dataframe, numerical_col, plot = False):
+    quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90]
+    print(dataframe[numerical_col].describe(quantiles).T)
+
+    if plot:
+        dataframe[numerical_col].hist()
+        plt.xlabel(numerical_col)
+        plt.title(numerical_col)
+        plt.show(block = True)
+
+for col in num_cols:
+    num_summary(df, col, plot = True)
+
+
+# Bool değerleri de int'e çevirip tüm kategorik değişkenleri görselleştirelim.
+
+df = sns.load_dataset("titanic")
+df.info()
+
+for col in df.columns:
+    if df[col].dtypes == "bool":
+        df[col] = df[col].astype(int)
+
+cat_cols, num_cols, cat_but_car = grab_col_names(df)
+
+def cat_summary(dataframe, col_name, plot = False):
+    print(pd.DataFrame({col_name: dataframe[col_name].value_counts(),
+            "Ratio": 100 * dataframe[col_name].value_counts()}))
+    print("---")
+
+    if plot:
+        sns.countplot(x = dataframe[col_name],data = dataframe)
+        plt.show(block = True)
+
+for col in cat_cols:
+    cat_summary(df, col, plot = True)
+
+
+
 
