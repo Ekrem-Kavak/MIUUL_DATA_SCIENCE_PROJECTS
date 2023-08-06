@@ -277,5 +277,43 @@ for col in cat_cols:
     cat_summary(df, col, plot = True)
 
 
+# 4- Hedef Değişken Analizi (Analysis of Target Variable)
 
+# Hedef değişken analizlerinde hedef değişken verideki önemli sorulara cevap verir.
+# Örneğin, bu veri seti için titanik kazasında hayatta kalan kişileri bağlayan sebepler ve kriterler nedir.
+
+# Bu veri seti için hayatta kalma oranı yani "survived" değişkeninin kategorik değişkenlerle ilişkisi ele alınabilir.
+
+df["survived"].value_counts()
+cat_summary(df, "survived")
+
+# Cinsiyete göre hayatta kalma oranları
+df.groupby("sex")["survived"].mean()
+
+#  "Survived" değişkeninin diğer değişkenlerle ilişkisini gösteren bir fonksiyon yazalım.
+
+def target_summary_with_cat(dataframe, target, categorical_col):
+    print(pd.DataFrame({"TARGET_MEAN": dataframe.groupby(categorical_col)[target].mean()}))
+
+# sınıflara göre hayatta kalma oranları
+target_summary_with_cat(df, "survived", "pclass")
+
+# tüm değişkenlere uygulayalım.
+
+for col in cat_cols:
+    target_summary_with_cat(df, "survived", col)
+
+
+# "Survived" değişkenin sayısal değişkenlerle ilişkisine bakalım.
+df.groupby("survived")["age"].mean()
+
+# Sözlük içerisinde de gösterebiliriz.
+df.groupby("survived").agg({"age":"mean"})
+
+def target_summary_with_num(dataframe, target, numerical_col):
+    print(dataframe.groupby(target).agg({numerical_col: "mean"}), end = "\n\n")
+
+
+for col in num_cols:
+    target_summary_with_num(df, "survived", col)
 
